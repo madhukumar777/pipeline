@@ -1,0 +1,36 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: ap-south-1
+    ECR_REPO_NAME: my-app-repo
+    IMAGE_NAME: app
+    CONTAINER_PORT: "8080"
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - ECR_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URI
+      - IMAGE_TAG=latest
+
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - docker build -t $IMAGE_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_NAME:$IMAGE_TAG $ECR_URI/$ECR_REPO_NAME:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo "Pushing image to ECR..."
+      - docker push $ECR_URI/$ECR_REPO_NAME:$IMAGE_TAG
+      - echo "Build completed successfully"
+      - echo "IMAGE_URI=$ECR_URI/$ECR_REPO_NAME:$IMAGE_TAG" > imageDetail.txt
+
+artifacts:
+  files:
+    - imageDetail.txt
+    - scripts/deploy_ec2.sh

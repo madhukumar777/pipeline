@@ -19,13 +19,13 @@ phases:
       - docker build -t $ECR_REPO:$IMAGE_TAG .
       - docker tag $ECR_REPO:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
 
-  post_build:
-    commands:
-      - echo "Pushing image to ECR..."
-      - docker push $ECR_URI/$ECR_REPO_NAME:$IMAGE_TAG
-      - echo "Build completed successfully"
-      - echo "IMAGE_URI=$ECR_URI/$ECR_REPO_NAME:$IMAGE_TAG" > imageDetail.txt
-
+post_build:
+  commands:
+    - echo "Pushing image to ECR..."
+    - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG
+    - echo "Writing imagedefinitions.json"
+    - printf '[{"name":"myapp","imageUri":"%s"}]' \
+      $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
   files:

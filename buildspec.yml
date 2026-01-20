@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     AWS_REGION: ap-south-2
-    ECR_REPO: myapp-ecr
+    ECR_REPO: myapp-prod
     IMAGE_TAG: latest
 
 phases:
